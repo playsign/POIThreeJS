@@ -15,14 +15,17 @@ var container, scene, camera, renderer, controls, stats;
 var keyboard = new THREEx.KeyboardState();
 var clock = new THREE.Clock();
 
+var mouse = { x: 0, y: 0 }, INTERSECTED;
+
 // custom global variables
 var cube;
-var projector, mouse = {
+var projector, proj, mouse = {
 		x: 0,
 		y: 0
 	}, INTERSECTED;
 var sprite1;
 var canvas1, context1, texture1;
+var boxes = [];
 
 // POI
 
@@ -107,16 +110,35 @@ function init() {
 	// CUSTOM //
 	////////////
 
+	// initialize object to perform world/screen calculations
+	proj = new THREE.Projector();
+
+	// when the mouse moves, call the given function
+	document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+
 	searchPOIs(0,0);
 }
 
+function onDocumentMouseMove( event ) 
+{
+	// the following line would stop any other event handler from firing
+	// (such as the mouse's TrackballControls)
+	// event.preventDefault();
+	
+	// update the mouse variable
+	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+}
+
+
 function createBox(lat, lon, name) {
 	var cubeGeometry = new THREE.CubeGeometry(10, 10, 10);
-	var cubeMaterial = new THREE.MeshNormalMaterial();
+	var cubeMaterial = new THREE.MeshBasicMaterial( { color: 0x000088 } );
 	cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
 	cube.position.set(lat, 5, lon);
 	cube.name = "Cube";
 	scene.add(cube);
+	boxes.push(cube);
 
 	var spritey = makeTextSprite(name, {
 		fontsize: 24,
@@ -148,6 +170,7 @@ function createBox(lat, lon, name) {
 	// });
 	// spritey.position.set(55, 105, 55);
 	// scene.add(spritey);
+
 }
 
 function makeTextSprite(message, parameters) {
@@ -241,6 +264,47 @@ function animate() {
 }
 
 function update() {
+	// find intersections
+
+	// create a Ray with origin at the mouse position
+	//   and direction into the scene (camera direction)
+	var vector = new THREE.Vector3( mouse.x, mouse.y, 1 );
+	proj.unprojectVector( vector, camera );
+	var ray = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+
+	// create an array containing all objects in the scene with which the ray intersects
+	var intersects = ray.intersectObjects( boxes );
+
+	// INTERSECTED = the object in the scene currently closest to the camera 
+	//		and intersected by the Ray projected from the mouse position 	
+	
+	// if there is one (or more) intersections
+	if ( intersects.length > 0 )
+	{
+		// if the closest object intersected is not the currently stored intersection object
+		if ( intersects[ 0 ].object != INTERSECTED ) 
+		{
+		    // restore previous intersection object (if it exists) to its original color
+			if ( INTERSECTED ) 
+				INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+			// store reference to closest object as current intersection object
+			INTERSECTED = intersects[ 0 ].object;
+			// store color of closest object (for later restoration)
+			INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+			// set a new color for closest object
+			INTERSECTED.material.color.setHex( 0xffff00 );
+		}
+	} 
+	else // there are no intersections
+	{
+		// restore previous intersection object (if it exists) to its original color
+		if ( INTERSECTED ) 
+			INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+		// remove previous intersection object reference
+		//     by setting current intersection object to "nothing"
+		INTERSECTED = null;
+	}
+
 	controls.update();
 	stats.update();
 }
@@ -275,10 +339,10 @@ function searchPOIs(lat, lng) {
 	miwi_poi_xhr.onreadystatechange = function() {
 		if (miwi_poi_xhr.readyState === 4) {
 			if (miwi_poi_xhr.status === 200) {
-				console.log("succes: " + miwi_poi_xhr.responseText);
+				// console.log("succes: " + miwi_poi_xhr.responseText);
 				var json = JSON.parse(miwi_poi_xhr.responseText);
 				parsePoiData(json);
-				console.log(json);
+				// console.log(json);
 			} else if (miwi_poi_xhr.status === 404) {
 				console.log("failed: " + miwi_poi_xhr.responseText);
 			}
@@ -338,7 +402,7 @@ function parsePoiData(data) {
 	for (uuid in pois) {
 		poiData = pois[uuid];
 		poiCore = poiData.fw_core;
-		console.log("poiCore=" + JSON.stringify(poiCore));
+		// console.log("poiCore=" + JSON.stringify(poiCore));
 		if (poiCore && poiCore.hasOwnProperty("location")) {
 			location = poiCore['location'];
 
@@ -353,8 +417,8 @@ function parsePoiData(data) {
 				lat = (location['latitude'] * 100000) - 6501000;
 				lon = (location['longitude'] * 100000) - 2547000;
 
-				console.log("lat: "+ lat);
-				console.log("lon: "+ lon);
+				// console.log("lat: "+ lat);
+				// console.log("lon: "+ lon);
 
 				createBox(lat, lon, poiCore['name']);
 			}
