@@ -1,0 +1,18 @@
+{
+    "pois": {
+        "e2845369-57ed-47e6-822a-b09cc247fff5": {
+            "location": {
+			    "type": "wsg84",
+                "lat": "65.0593340",
+                "lon": "25.4664775"
+            },
+            "geometry": "POINT(65.0593340 25.4664775)",
+            "category": "cafe",
+            "name": "Aulakahvila",
+			"label": "some more info",
+            "description": "Cafe at the University of Oulu",
+			"url": "http://www.aulakahvila.com/"
+        }
+    },
+    "queryID": "testi_id"
+}

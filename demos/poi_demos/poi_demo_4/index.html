@@ -1,0 +1,60 @@
+<!DOCTYPE html PUBLIC
+    "-//W3C//DTD XHTML 1.0 Strict//UTF-8" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <title>POI Demo 4</title>
+
+    <!-- Style -->
+    <link rel="stylesheet" type="text/css" media="all" href="../layout.css" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+
+
+</head>
+
+<body>
+
+<div id="container">
+    <div id="top">
+        <h1> POI Demo 4 </h1>
+        <h2> POIs on a map + additional data on request </h2>
+        <h3> Component POI data </h3>
+    </div>
+
+    <div id="loadingScreen">
+        Loading Demo... <br />
+        <span id="progress"></span>
+    </div>
+
+    <div id="content-wrapper">
+        <div id="left">
+            <div id="map-canvas"></div>
+        </div>
+        <div id="right">
+            <div id="log"></div>
+        </div>
+    </div>
+    <div id="footer">
+        <div id="buttons">
+            <button id="button1">Locate</button>
+            <input type="text" id="address" value="Address/Coords"/>
+            <button id="button2">Go to position</button>
+<!--			
+            <button id="button3">Map Auto-Update Off</button>
+            <button id="button4">Update</button>
+-->
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript" src="../../../deps/js/Util.js"></script>
+<script type="text/javascript" src="poi_demo_4.js"></script>
+<script type="text/javascript" src="../icon_strings.js"/>
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?v=3.exp&amp;sensor=true&amp;callback=demo4.initialize"></script>
+
+
+
+
+</body>
+</html>
