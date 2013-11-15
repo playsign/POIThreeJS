@@ -15,7 +15,10 @@ var container, scene, camera, renderer, controls, stats;
 var keyboard = new THREEx.KeyboardState();
 var clock = new THREE.Clock();
 
-var mouse = { x: 0, y: 0 }, INTERSECTED;
+var mouse = {
+	x: 0,
+	y: 0
+}, INTERSECTED;
 
 // custom global variables
 var cube;
@@ -114,68 +117,69 @@ function init() {
 	proj = new THREE.Projector();
 
 	// when the mouse moves, call the given function
-	document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+	document.addEventListener('mousemove', onDocumentMouseMove, false);
 
 	// when the mouse moves, call the given function
-	document.addEventListener( 'mousedown', onDocumentMouseDown, false );
+	document.addEventListener('mousedown', onDocumentMouseDown, false);
 
-	searchPOIs(0,0);
+	searchPOIs(0, 0);
 }
 
-function onDocumentMouseMove( event ) 
-{
-	// the following line would stop any other event handler from firing
-	// (such as the mouse's TrackballControls)
-	// event.preventDefault();
-	
-	// update the mouse variable
-	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-}
-
-
-function onDocumentMouseDown( event ) 
-{
+function onDocumentMouseMove(event) {
 	// the following line would stop any other event handler from firing
 	// (such as the mouse's TrackballControls)
 	// event.preventDefault();
 
-	
 	// update the mouse variable
-	mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-	mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
-	
+	mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+	mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+}
+
+
+function onDocumentMouseDown(event) {
+	// the following line would stop any other event handler from firing
+	// (such as the mouse's TrackballControls)
+	// event.preventDefault();
+
+
+	// update the mouse variable
+	mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+	mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
 	// find intersections
 
 	// create a Ray with origin at the mouse position
 	//   and direction into the scene (camera direction)
-	var vector = new THREE.Vector3( mouse.x, mouse.y, 1 );
-	proj.unprojectVector( vector, camera );
-	var ray = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+	var vector = new THREE.Vector3(mouse.x, mouse.y, 1);
+	proj.unprojectVector(vector, camera);
+	var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
 
 	// create an array containing all objects in the scene with which the ray intersects
-	var intersects = ray.intersectObjects( boxes );
-	
+	var intersects = ray.intersectObjects(boxes);
+
 	// if there is one (or more) intersections
-	if ( intersects.length > 0 )
-	{
-		console.log(intersects[0] );
+	if (intersects.length > 0) {
+		console.log(intersects[0]);
 		// change the color of the closest face.
-		intersects[ 0 ].object.material.color.setHex( 0x000FFF );
+		intersects[0].object.material.color.setHex(0x000FFF);
+		intersects[0].object.children[1].visible = !intersects[0].object.children[1].visible;
 	}
 
 }
 
-function createBox(lat, lon, name) {
+function createBox(lat, lon, name, desc) {
 	var cubeGeometry = new THREE.CubeGeometry(10, 10, 10);
-	var cubeMaterial = new THREE.MeshBasicMaterial( { color: 0x000088 } );
+	var cubeMaterial = new THREE.MeshBasicMaterial({
+		color: 0x000088
+	});
 	cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
 	cube.position.set(lat, 5, lon);
 	cube.name = "Cube";
 	scene.add(cube);
 	boxes.push(cube);
 
-	var spritey = makeTextSprite(name, {
+	// Name sprite
+	var nameSprite = makeTextSprite(name, {
 		fontsize: 24,
 		borderColor: {
 			r: 255,
@@ -190,21 +194,30 @@ function createBox(lat, lon, name) {
 			a: 0.8
 		}
 	});
-	spritey.position.set(lat, 30, lon);
-	scene.add(spritey);
+	nameSprite.position.set(0, 30, 0);
+	cube.add(nameSprite);
+	// cube.nameSprite = nameSprite;
 
-	// var spritey = makeTextSprite(description, {
-	// 	fontsize: 32,
-	// 	fontface: "Georgia",
-	// 	borderColor: {
-	// 		r: 0,
-	// 		g: 0,
-	// 		b: 255,
-	// 		a: 1.0
-	// 	}
-	// });
-	// spritey.position.set(55, 105, 55);
-	// scene.add(spritey);
+	// Description sprite
+	var descSprite = makeTextSprite(desc, {
+		fontsize: 16,
+		borderColor: {
+			r: 0,
+			g: 0,
+			b: 255,
+			a: 1.0
+		},
+		backgroundColor: {
+			r: 100,
+			g: 100,
+			b: 255,
+			a: 0.8
+		}
+	});
+	descSprite.position.set(0, 60, 0);
+	descSprite.visible = false;
+	cube.add(descSprite);
+
 
 }
 
@@ -303,38 +316,35 @@ function update() {
 
 	// create a Ray with origin at the mouse position
 	//   and direction into the scene (camera direction)
-	var vector = new THREE.Vector3( mouse.x, mouse.y, 1 );
-	proj.unprojectVector( vector, camera );
-	var ray = new THREE.Raycaster( camera.position, vector.sub( camera.position ).normalize() );
+	var vector = new THREE.Vector3(mouse.x, mouse.y, 1);
+	proj.unprojectVector(vector, camera);
+	var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
 
 	// create an array containing all objects in the scene with which the ray intersects
-	var intersects = ray.intersectObjects( boxes );
+	var intersects = ray.intersectObjects(boxes);
 
 	// INTERSECTED = the object in the scene currently closest to the camera 
 	//		and intersected by the Ray projected from the mouse position 	
-	
+
 	// if there is one (or more) intersections
-	if ( intersects.length > 0 )
-	{
+	if (intersects.length > 0) {
 		// if the closest object intersected is not the currently stored intersection object
-		if ( intersects[ 0 ].object != INTERSECTED ) 
-		{
-		    // restore previous intersection object (if it exists) to its original color
-			if ( INTERSECTED ) 
-				INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+		if (intersects[0].object != INTERSECTED) {
+			// restore previous intersection object (if it exists) to its original color
+			if (INTERSECTED)
+				INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
 			// store reference to closest object as current intersection object
-			INTERSECTED = intersects[ 0 ].object;
+			INTERSECTED = intersects[0].object;
 			// store color of closest object (for later restoration)
 			INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
 			// set a new color for closest object
-			INTERSECTED.material.color.setHex( 0xffff00 );
+			INTERSECTED.material.color.setHex(0xffff00);
 		}
-	} 
-	else // there are no intersections
+	} else // there are no intersections
 	{
 		// restore previous intersection object (if it exists) to its original color
-		if ( INTERSECTED ) 
-			INTERSECTED.material.color.setHex( INTERSECTED.currentHex );
+		if (INTERSECTED)
+			INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
 		// remove previous intersection object reference
 		//     by setting current intersection object to "nothing"
 		INTERSECTED = null;
@@ -377,7 +387,7 @@ function searchPOIs(lat, lng) {
 				// console.log("succes: " + miwi_poi_xhr.responseText);
 				var json = JSON.parse(miwi_poi_xhr.responseText);
 				parsePoiData(json);
-				// console.log(json);
+				console.log(json);
 			} else if (miwi_poi_xhr.status === 404) {
 				console.log("failed: " + miwi_poi_xhr.responseText);
 			}
@@ -455,7 +465,7 @@ function parsePoiData(data) {
 				// console.log("lat: "+ lat);
 				// console.log("lon: "+ lon);
 
-				createBox(lat, lon, poiCore['name']);
+				createBox(lat, lon, poiCore['name'], poiCore['category']);
 			}
 		}
 
