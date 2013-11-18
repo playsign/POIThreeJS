@@ -40,6 +40,9 @@ var BACKEND_ADDRESS_POI = "http://chiru.cie.fi:8080/";
 
 var searchRadius = 600;
 
+var pois = [];
+var widgets = [];
+
 init();
 animate();
 
@@ -200,7 +203,7 @@ function createBox(lat, lon, name, desc) {
 
 	// Description sprite
 	var descSprite = makeTextSprite(desc, {
-		fontsize: 16,
+		fontsize: 8,
 		borderColor: {
 			r: 0,
 			g: 0,
@@ -217,8 +220,61 @@ function createBox(lat, lon, name, desc) {
 	descSprite.position.set(0, 60, 0);
 	descSprite.visible = false;
 	cube.add(descSprite);
+	pois.push(cube);
+
+	// jQuery dialog
+	var newWidget = name;
+	$("#infoButton").append("<div id=" + newWidget + " title=" + newWidget + ">hello world</div>");
+	widgets.push($("#"+newWidget).dialog({ position: { my: "left top", at: "left bottom", of: window } })
 
 
+		);
+
+	// $("#"+newWidget)
+	// 	.css({
+	// 	"background": "rgba(255,255,255,0.5)"
+	// })
+	// 	.dialog({
+	// 	autoOpen: false,
+	// 	show: {
+	// 		effect: 'fade',
+	// 		duration: 500
+	// 	},
+	// 	hide: {
+	// 		effect: 'fade',
+	// 		duration: 500
+	// 	}
+	// });
+
+	// widgets.push($(newWidget));
+
+	// var newWidget = jQuery('<div/>', {
+	// 	id: 'foo',
+	// 	href: 'http://google.com',
+	// 	title: name,
+	// 	rel: 'external',
+	// 	text: 'Go to Google!'
+	// }).appendTo('#infoButton').dialog().text(name);
+
+	// widgets.push(jQuery("#infoButton").dialog().text(name));
+
+	// var newWidget = $("<div/>");
+	// newWidget.attr("id", "twitter");
+	// newWidget.css({
+	// 	"background-color": "rgba(255,255,255,0.7)",
+	// 	"color": "rgb(80,80,80)",
+	// 	"border": "1px solid rgba(200,200,200,0.7)",
+	// 	"font-size": 12,
+	// 	"border-radius": 6,
+	// 	"position": "absolute",
+	// 	"top": 0,
+	// 	"padding": 10,
+	// 	"margin": 10,
+	// 	"width": 250
+	// });
+	// meshmoon.ui.addWidgetToScene(newWidget);
+	// widgets.push(newWidget);
+	// setWidgetText(i);
 }
 
 function makeTextSprite(message, parameters) {
@@ -350,6 +406,9 @@ function update() {
 		INTERSECTED = null;
 	}
 
+	for (var i = 0; i < widgets.length; i++) {
+		setWidgetPosition(i);
+	}
 	controls.update();
 	stats.update();
 }
@@ -367,8 +426,8 @@ function searchPOIs(lat, lng) {
 
 	if (!lat || !lng) {
 		// center = map.getCenter();
-		lat = 65.0167;
-		lng = 25.4667;
+		lat = 65.059;
+		lng = 25.466;
 	}
 
 	searchRadius = 1000;
@@ -459,13 +518,13 @@ function parsePoiData(data) {
 				// counter++;
 
 				var lat, lon, name;
-				lat = (location['latitude'] * 100000) - 6501000;
-				lon = (location['longitude'] * 100000) - 2547000;
+				lat = (location['latitude'] * 100000) - 6505900;
+				lon = (location['longitude'] * 100000) - 2546600;
 
 				// console.log("lat: "+ lat);
 				// console.log("lon: "+ lon);
 
-				createBox(lat, lon, poiCore['name'], poiCore['category']);
+				createBox(lat, lon, poiCore['name'], poiCore['description']);
 			}
 		}
 
@@ -473,4 +532,67 @@ function parsePoiData(data) {
 
 		// storePoi(uuid, poiCore);
 	}
+}
+
+// WIDGETS
+// 2D widgets to show tweets
+
+function initWidgets() {
+	// for (var i = 0; i < personAmount; i++) {
+	newWidget = $("<div/>");
+	newWidget.attr("id", "twitter");
+	newWidget.css({
+		"background-color": "rgba(255,255,255,0.7)",
+		"color": "rgb(80,80,80)",
+		"border": "1px solid rgba(200,200,200,0.7)",
+		"font-size": 12,
+		"border-radius": 6,
+		"position": "absolute",
+		"top": 0,
+		"padding": 10,
+		"margin": 10,
+		"width": 250
+	});
+
+	// meshmoon.ui.addWidgetToScene(newWidget);
+	widgets.push(newWidget);
+
+	// setWidgetText(i);
+	// }
+}
+
+// Calculate and set widget position
+
+function setWidgetPosition(i) {
+
+	var x, y, p, v, percX, percY, left, top;
+
+	// this will give us position relative to the world
+	p = new THREE.Vector3(pois[i].position.x, pois[i].position.y + 1, pois[i].position.z);
+
+	// projectVector will translate position to 2d
+	projector = new THREE.Projector();
+	v = projector.projectVector(p, camera);
+
+	// translate our vector so that percX=0 represents
+	// the left edge, percX=1 is the right edge,
+	// percY=0 is the top edge, and percY=1 is the bottom edge.
+	percX = (v.x + 1) / 2;
+	percY = (-v.y + 1) / 2;
+
+	// scale these values to our viewport size
+	x = percX * window.innerWidth;
+	y = percY * window.innerHeight;
+
+	// calculate distance between the camera and the person. Used for fading the tooltip
+	var distance = p.distanceTo(camera.position);
+	var distance = 2 / distance;
+
+	widgets[i].dialog( "option", "position", [x,y] );
+
+	// widgets[i].css({
+	// 	left: x,
+	// 	top: y,
+	// 	opacity: distance
+	// });
 }
