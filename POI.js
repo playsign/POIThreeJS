@@ -61,7 +61,6 @@ function init() {
 		FAR = 20000;
 	camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
 	scene.add(camera);
-	camera.position.set(0, 0, 0);
 	// camera.lookAt(scene.position);
 	// RENDERER
 	if (Detector.webgl)
@@ -161,7 +160,7 @@ function onDocumentMouseDown(event) {
 	proj.unprojectVector(vector, camera);
 	var pLocal = new THREE.Vector3(0, 0, -1);
 	var pWorld = pLocal.applyMatrix4(camera.matrixWorld);
-	var ray = new THREE.Raycaster( pWorld, vector.sub( pWorld ).normalize() );
+	var ray = new THREE.Raycaster(pWorld, vector.sub(pWorld).normalize());
 
 	// create an array containing all objects in the scene with which the ray intersects
 	var intersects = ray.intersectObjects(pois);
@@ -169,17 +168,21 @@ function onDocumentMouseDown(event) {
 	// if there is one (or more) intersections
 	if (intersects.length > 0) {
 		console.log(intersects[0]);
-		// change the color of the closest face.
-		intersects[0].object.material.color.setHex(0x000FFF);
-		intersects[0].object.children[1].visible = !intersects[0].object.children[1].visible;
+		var selectedObject = intersects[0].object;
 
-		// jQuery dialog
-		var newDialog = intersects[0].object.uuid;
-		$("body").append("<div id=" + newDialog + " title='" + intersects[0].object.name + "'>" + intersects[0].object.description + "</div>");
-		dialogs[intersects[0].object.index] = $("#" + newDialog).dialog({
-			width: 300,
-			height: "auto",
-		});
+		if (dialogs[selectedObject.index] === undefined) {
+
+			// jQuery dialog
+			var newDialog = selectedObject.uuid;
+			$("body").append("<div id=" + newDialog + " title='" + selectedObject.name + "'>" + selectedObject.description + "</div>");
+			dialogs[selectedObject.index] = $("#" + newDialog).dialog({
+				width: 300,
+				height: "auto",
+			});
+		} else {
+			dialogs[selectedObject.index].remove();
+			dialogs[selectedObject.index] = undefined;
+		}
 
 	}
 
@@ -400,7 +403,7 @@ function update() {
 	//   and direction into the scene (camera direction)
 	var vector = new THREE.Vector3(mouse.x, mouse.y, 1);
 	proj.unprojectVector(vector, camera);
-	var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+	var ray = new THREE.Raycaster(controls.getObject().position, vector.sub(controls.getObject().position).normalize());
 
 	// create an array containing all objects in the scene with which the ray intersects
 	var intersects = ray.intersectObjects(pois);
@@ -432,11 +435,11 @@ function update() {
 		INTERSECTED = null;
 	}
 
-	if (cameraOldPosition.x != camera.position.x || cameraOldPosition.y != camera.position.y || cameraOldPosition.z != camera.position.z) {
+	if (cameraOldPosition.x != controls.getObject().position.x || cameraOldPosition.y != controls.getObject().position.y || cameraOldPosition.z != controls.getObject().position.z) {
 		for (var i = 0; i < dialogs.length; i++) {
 			setDialogPosition(i);
 		}
-		cameraOldPosition.set(camera.position.x, camera.position.y, camera.position.z);
+		cameraOldPosition.set(controls.getObject().position.x, controls.getObject().position.y, controls.getObject().position.z);
 	}
 	controls.update(Date.now() - time);
 	stats.update();
@@ -599,9 +602,9 @@ function setDialogPosition(i) {
 
 	var pLocal = new THREE.Vector3(0, 0, -1);
 	var pWorld = pLocal.applyMatrix4(camera.matrixWorld);
-	var forward = pWorld.sub(camera.position).normalize();
+	var forward = pWorld.sub(controls.getObject().position).normalize();
 	var toOther = pois[i].position.clone();
-	toOther.sub(camera.position);
+	toOther.sub(controls.getObject().position);
 	// console.clear();
 	// console.log(toOther);
 	if (forward.dot(toOther) < 0) {
@@ -631,7 +634,7 @@ function setDialogPosition(i) {
 	y = percY * window.innerHeight;
 
 	// calculate distance between the camera and the person. Used for fading the tooltip
-	var distance = p.distanceTo(camera.position);
+	var distance = p.distanceTo(controls.getObject().position);
 	var distance = 2 / distance;
 
 	dialogs[i].dialog("option", "position", [x, y]);
