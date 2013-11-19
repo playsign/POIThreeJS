@@ -224,11 +224,18 @@ function createBox(lat, lon, name, desc) {
 
 	// jQuery dialog
 	var newWidget = name;
-	$("#infoButton").append("<div id=" + newWidget + " title=" + newWidget + ">hello world</div>");
-	widgets.push($("#"+newWidget).dialog({ position: { my: "left top", at: "left bottom", of: window } })
-
-
-		);
+	$("#ThreeJS").append("<div id=" + newWidget + " title=" + newWidget + ">Hello</div>");
+	$("#" + newWidget).dialog({
+		position: {
+			my: "left top",
+			at: "left bottom",
+			of: window
+		},
+		width: 500,
+		height: 80,
+		// maxWidth: 30,
+  //       minWidth: 10
+	});
 
 	// $("#"+newWidget)
 	// 	.css({
@@ -406,9 +413,9 @@ function update() {
 		INTERSECTED = null;
 	}
 
-	for (var i = 0; i < widgets.length; i++) {
-		setWidgetPosition(i);
-	}
+	// for (var i = 0; i < widgets.length; i++) {
+	// 	setWidgetPosition(i);
+	// }
 	controls.update();
 	stats.update();
 }
@@ -588,7 +595,7 @@ function setWidgetPosition(i) {
 	var distance = p.distanceTo(camera.position);
 	var distance = 2 / distance;
 
-	widgets[i].dialog( "option", "position", [x,y] );
+	widgets[i].dialog("option", "position", [x, y]);
 
 	// widgets[i].css({
 	// 	left: x,
