@@ -149,6 +149,12 @@ THREE.FreeLookControls = function(camera, domElement) {
 
 	};
 
+	this.getVelocity = function() {
+
+		return velocity;
+
+	};
+
 	this.isOnObject = function(boolean) {
 
 		isOnObject = boolean;
