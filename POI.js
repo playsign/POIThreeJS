@@ -12,7 +12,7 @@
 
 // standard global variables
 var container, scene, camera, renderer, controls, stats;
-var cameraOldQuaternionY = 0;
+var cameraOldQuaternionW = 0;
 var keyboard = new THREEx.KeyboardState();
 var clock = new THREE.Clock();
 
@@ -435,12 +435,12 @@ function update() {
 		INTERSECTED = null;
 	}
 
-	if (controls.getObject().quaternion._y != cameraOldQuaternionY || controls.getVelocity().length() > 0.01) {
+	if (controls.getObject().quaternion._w != cameraOldQuaternionW || controls.getVelocity().length() > 0.01) {
 		for (var i = 0; i < dialogs.length; i++) {
 			setDialogPosition(i);
 		}
 
-		cameraOldQuaternionY = controls.getObject().quaternion._y;
+		cameraOldQuaternionW = controls.getObject().quaternion._w;
 	} 
 	controls.update(Date.now() - time);
 	stats.update();
