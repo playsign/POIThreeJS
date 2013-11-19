@@ -12,6 +12,7 @@
 
 // standard global variables
 var container, scene, camera, renderer, controls, stats;
+var cameraOldPosition = new THREE.Vector3(0,0,0);
 var keyboard = new THREEx.KeyboardState();
 var clock = new THREE.Clock();
 
@@ -41,7 +42,7 @@ var BACKEND_ADDRESS_POI = "http://chiru.cie.fi:8080/";
 var searchRadius = 600;
 
 var pois = [];
-var widgets = [];
+var dialogs = [];
 
 init();
 animate();
@@ -223,19 +224,20 @@ function createBox(lat, lon, name, desc) {
 	pois.push(cube);
 
 	// jQuery dialog
-	var newWidget = name;
-	$("#ThreeJS").append("<div id=" + newWidget + " title=" + newWidget + ">Hello</div>");
-	$("#" + newWidget).dialog({
-		position: {
-			my: "left top",
-			at: "left bottom",
-			of: window
-		},
-		width: 500,
-		height: 80,
-		// maxWidth: 30,
-  //       minWidth: 10
-	});
+	var newDialog = name;
+	$("body").append("<div id=" + newDialog + " title=" + newDialog + ">" + desc + "</div>");
+	dialogs.push($("#" + newDialog).dialog({
+		// position: {
+		// 	my: "left top",
+		// 	at: "left bottom",
+		// 	of: window
+		// },
+		width: 300,
+		height: "auto",
+		// maxWidth: 100,
+		//       minWidth: 10
+	}));
+
 
 	// $("#"+newWidget)
 	// 	.css({
@@ -413,9 +415,12 @@ function update() {
 		INTERSECTED = null;
 	}
 
-	// for (var i = 0; i < widgets.length; i++) {
-	// 	setWidgetPosition(i);
-	// }
+	if (cameraOldPosition.x != camera.position.x || cameraOldPosition.y != camera.position.y || cameraOldPosition.z != camera.position.z) {
+		for (var i = 0; i < dialogs.length; i++) {
+			setDialogPosition(i);
+		}
+		cameraOldPosition.set(camera.position.x, camera.position.y, camera.position.z);
+	}
 	controls.update();
 	stats.update();
 }
@@ -544,33 +549,33 @@ function parsePoiData(data) {
 // WIDGETS
 // 2D widgets to show tweets
 
-function initWidgets() {
-	// for (var i = 0; i < personAmount; i++) {
-	newWidget = $("<div/>");
-	newWidget.attr("id", "twitter");
-	newWidget.css({
-		"background-color": "rgba(255,255,255,0.7)",
-		"color": "rgb(80,80,80)",
-		"border": "1px solid rgba(200,200,200,0.7)",
-		"font-size": 12,
-		"border-radius": 6,
-		"position": "absolute",
-		"top": 0,
-		"padding": 10,
-		"margin": 10,
-		"width": 250
-	});
+// function initWidgets() {
+// 	// for (var i = 0; i < personAmount; i++) {
+// 	newWidget = $("<div/>");
+// 	newWidget.attr("id", "twitter");
+// 	newWidget.css({
+// 		"background-color": "rgba(255,255,255,0.7)",
+// 		"color": "rgb(80,80,80)",
+// 		"border": "1px solid rgba(200,200,200,0.7)",
+// 		"font-size": 12,
+// 		"border-radius": 6,
+// 		"position": "absolute",
+// 		"top": 0,
+// 		"padding": 10,
+// 		"margin": 10,
+// 		"width": 250
+// 	});
 
-	// meshmoon.ui.addWidgetToScene(newWidget);
-	widgets.push(newWidget);
+// 	// meshmoon.ui.addWidgetToScene(newWidget);
+// 	widgets.push(newWidget);
 
-	// setWidgetText(i);
-	// }
-}
+// 	// setWidgetText(i);
+// 	// }
+// }
 
 // Calculate and set widget position
 
-function setWidgetPosition(i) {
+function setDialogPosition(i) {
 
 	var x, y, p, v, percX, percY, left, top;
 
@@ -595,7 +600,7 @@ function setWidgetPosition(i) {
 	var distance = p.distanceTo(camera.position);
 	var distance = 2 / distance;
 
-	widgets[i].dialog("option", "position", [x, y]);
+	dialogs[i].dialog("option", "position", [x, y]);
 
 	// widgets[i].css({
 	// 	left: x,
