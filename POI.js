@@ -12,7 +12,7 @@
 
 // standard global variables
 var container, scene, camera, renderer, controls, stats;
-var cameraOldPosition = new THREE.Vector3(0,0,0);
+var cameraOldPosition = new THREE.Vector3(0, 0, 0);
 var keyboard = new THREEx.KeyboardState();
 var clock = new THREE.Clock();
 
@@ -576,6 +576,23 @@ function parsePoiData(data) {
 // Calculate and set widget position
 
 function setDialogPosition(i) {
+	if(dialogs[i] === undefined){
+		return;
+	}
+
+	var pLocal = new THREE.Vector3(0, 0, -1);
+	var pWorld = pLocal.applyMatrix4(camera.matrixWorld);
+	var forward = pWorld.sub(camera.position).normalize();
+	var toOther = pois[i].position.clone();
+	toOther.sub(camera.position);
+	// console.clear();
+	// console.log(toOther);
+	if (forward.dot(toOther) < 0) {
+		dialogs[i].remove();
+		dialogs[i] = undefined;
+		return;
+	}
+
 
 	var x, y, p, v, percX, percY, left, top;
 
