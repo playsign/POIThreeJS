@@ -29,7 +29,6 @@ var projector, proj, mouse = {
 	}, INTERSECTED;
 var sprite1;
 var canvas1, context1, texture1;
-var boxes = [];
 
 // POI
 
@@ -159,7 +158,7 @@ function onDocumentMouseDown(event) {
 	var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
 
 	// create an array containing all objects in the scene with which the ray intersects
-	var intersects = ray.intersectObjects(boxes);
+	var intersects = ray.intersectObjects(pois);
 
 	// if there is one (or more) intersections
 	if (intersects.length > 0) {
@@ -167,313 +166,325 @@ function onDocumentMouseDown(event) {
 		// change the color of the closest face.
 		intersects[0].object.material.color.setHex(0x000FFF);
 		intersects[0].object.children[1].visible = !intersects[0].object.children[1].visible;
+
+		// jQuery dialog
+		var newDialog = intersects[0].object.uuid;
+		$("body").append("<div id=" + newDialog + " title='" + intersects[0].object.name + "'>" + intersects[0].object.description + "</div>");
+		dialogs[intersects[0].object.index] = $("#" + newDialog).dialog({
+			width: 300,
+			height: "auto",
+		});
+
+		}
+
 	}
 
-}
+	function createBox(lat, lon, name, desc, uuid) {
+		var cubeGeometry = new THREE.CubeGeometry(10, 10, 10);
+		var cubeMaterial = new THREE.MeshBasicMaterial({
+			color: 0x000088
+		});
+		cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+		cube.position.set(lat, 5, lon);
+		cube.name = name;
+		cube.description = desc;
+		cube.uuid = uuid;
+		scene.add(cube);
 
-function createBox(lat, lon, name, desc) {
-	var cubeGeometry = new THREE.CubeGeometry(10, 10, 10);
-	var cubeMaterial = new THREE.MeshBasicMaterial({
-		color: 0x000088
-	});
-	cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-	cube.position.set(lat, 5, lon);
-	cube.name = "Cube";
-	scene.add(cube);
-	boxes.push(cube);
+		// Name sprite
+		var nameSprite = makeTextSprite(name, {
+			fontsize: 24,
+			borderColor: {
+				r: 255,
+				g: 0,
+				b: 0,
+				a: 1.0
+			},
+			backgroundColor: {
+				r: 255,
+				g: 100,
+				b: 100,
+				a: 0.8
+			}
+		});
+		nameSprite.position.set(0, 30, 0);
+		cube.add(nameSprite);
+		// cube.nameSprite = nameSprite;
 
-	// Name sprite
-	var nameSprite = makeTextSprite(name, {
-		fontsize: 24,
-		borderColor: {
-			r: 255,
+		// Description sprite
+		var descSprite = makeTextSprite(desc, {
+			fontsize: 8,
+			borderColor: {
+				r: 0,
+				g: 0,
+				b: 255,
+				a: 1.0
+			},
+			backgroundColor: {
+				r: 100,
+				g: 100,
+				b: 255,
+				a: 0.8
+			}
+		});
+		descSprite.position.set(0, 60, 0);
+		descSprite.visible = false;
+		cube.add(descSprite);
+		cube.index = pois.length;
+		pois.push(cube);
+		dialogs.push(undefined);
+
+		// // jQuery dialog
+		// var newDialog = name;
+		// $("body").append("<div id=" + newDialog + " title=" + newDialog + ">" + desc + "</div>");
+		// dialogs.push($("#" + newDialog).dialog({
+		// 	// position: {
+		// 	// 	my: "left top",
+		// 	// 	at: "left bottom",
+		// 	// 	of: window
+		// 	// },
+		// 	width: 300,
+		// 	height: "auto",
+		// 	// maxWidth: 100,
+		// 	//       minWidth: 10
+		// }));
+
+
+		// $("#"+newWidget)
+		// 	.css({
+		// 	"background": "rgba(255,255,255,0.5)"
+		// })
+		// 	.dialog({
+		// 	autoOpen: false,
+		// 	show: {
+		// 		effect: 'fade',
+		// 		duration: 500
+		// 	},
+		// 	hide: {
+		// 		effect: 'fade',
+		// 		duration: 500
+		// 	}
+		// });
+
+		// widgets.push($(newWidget));
+
+		// var newWidget = jQuery('<div/>', {
+		// 	id: 'foo',
+		// 	href: 'http://google.com',
+		// 	title: name,
+		// 	rel: 'external',
+		// 	text: 'Go to Google!'
+		// }).appendTo('#infoButton').dialog().text(name);
+
+		// widgets.push(jQuery("#infoButton").dialog().text(name));
+
+		// var newWidget = $("<div/>");
+		// newWidget.attr("id", "twitter");
+		// newWidget.css({
+		// 	"background-color": "rgba(255,255,255,0.7)",
+		// 	"color": "rgb(80,80,80)",
+		// 	"border": "1px solid rgba(200,200,200,0.7)",
+		// 	"font-size": 12,
+		// 	"border-radius": 6,
+		// 	"position": "absolute",
+		// 	"top": 0,
+		// 	"padding": 10,
+		// 	"margin": 10,
+		// 	"width": 250
+		// });
+		// meshmoon.ui.addWidgetToScene(newWidget);
+		// widgets.push(newWidget);
+		// setWidgetText(i);
+	}
+
+	function makeTextSprite(message, parameters) {
+		if (parameters === undefined) parameters = {};
+
+		var fontface = parameters.hasOwnProperty("fontface") ?
+			parameters["fontface"] : "Arial";
+
+		var fontsize = parameters.hasOwnProperty("fontsize") ?
+			parameters["fontsize"] : 18;
+
+		var borderThickness = parameters.hasOwnProperty("borderThickness") ?
+			parameters["borderThickness"] : 4;
+
+		var borderColor = parameters.hasOwnProperty("borderColor") ?
+			parameters["borderColor"] : {
+			r: 0,
 			g: 0,
 			b: 0,
 			a: 1.0
-		},
-		backgroundColor: {
-			r: 255,
-			g: 100,
-			b: 100,
-			a: 0.8
-		}
-	});
-	nameSprite.position.set(0, 30, 0);
-	cube.add(nameSprite);
-	// cube.nameSprite = nameSprite;
+		};
 
-	// Description sprite
-	var descSprite = makeTextSprite(desc, {
-		fontsize: 8,
-		borderColor: {
-			r: 0,
-			g: 0,
+		var backgroundColor = parameters.hasOwnProperty("backgroundColor") ?
+			parameters["backgroundColor"] : {
+			r: 255,
+			g: 255,
 			b: 255,
 			a: 1.0
-		},
-		backgroundColor: {
-			r: 100,
-			g: 100,
-			b: 255,
-			a: 0.8
-		}
-	});
-	descSprite.position.set(0, 60, 0);
-	descSprite.visible = false;
-	cube.add(descSprite);
-	pois.push(cube);
+		};
 
-	// jQuery dialog
-	var newDialog = name;
-	$("body").append("<div id=" + newDialog + " title=" + newDialog + ">" + desc + "</div>");
-	dialogs.push($("#" + newDialog).dialog({
-		// position: {
-		// 	my: "left top",
-		// 	at: "left bottom",
-		// 	of: window
-		// },
-		width: 300,
-		height: "auto",
-		// maxWidth: 100,
-		//       minWidth: 10
-	}));
+		var spriteAlignment = THREE.SpriteAlignment.topLeft;
 
+		var canvas = document.createElement('canvas');
+		var context = canvas.getContext('2d');
+		context.font = "Bold " + fontsize + "px " + fontface;
 
-	// $("#"+newWidget)
-	// 	.css({
-	// 	"background": "rgba(255,255,255,0.5)"
-	// })
-	// 	.dialog({
-	// 	autoOpen: false,
-	// 	show: {
-	// 		effect: 'fade',
-	// 		duration: 500
-	// 	},
-	// 	hide: {
-	// 		effect: 'fade',
-	// 		duration: 500
-	// 	}
-	// });
+		// get size data (height depends only on font size)
+		var metrics = context.measureText(message);
+		var textWidth = metrics.width;
 
-	// widgets.push($(newWidget));
+		// background color
+		context.fillStyle = "rgba(" + backgroundColor.r + "," + backgroundColor.g + "," + backgroundColor.b + "," + backgroundColor.a + ")";
+		// border color
+		context.strokeStyle = "rgba(" + borderColor.r + "," + borderColor.g + "," + borderColor.b + "," + borderColor.a + ")";
 
-	// var newWidget = jQuery('<div/>', {
-	// 	id: 'foo',
-	// 	href: 'http://google.com',
-	// 	title: name,
-	// 	rel: 'external',
-	// 	text: 'Go to Google!'
-	// }).appendTo('#infoButton').dialog().text(name);
+		context.lineWidth = borderThickness;
+		roundRect(context, borderThickness / 2, borderThickness / 2, textWidth + borderThickness, fontsize * 1.4 + borderThickness, 6);
+		// 1.4 is extra height factor for text below baseline: g,j,p,q.
 
-	// widgets.push(jQuery("#infoButton").dialog().text(name));
+		// text color
+		context.fillStyle = "rgba(0, 0, 0, 1.0)";
 
-	// var newWidget = $("<div/>");
-	// newWidget.attr("id", "twitter");
-	// newWidget.css({
-	// 	"background-color": "rgba(255,255,255,0.7)",
-	// 	"color": "rgb(80,80,80)",
-	// 	"border": "1px solid rgba(200,200,200,0.7)",
-	// 	"font-size": 12,
-	// 	"border-radius": 6,
-	// 	"position": "absolute",
-	// 	"top": 0,
-	// 	"padding": 10,
-	// 	"margin": 10,
-	// 	"width": 250
-	// });
-	// meshmoon.ui.addWidgetToScene(newWidget);
-	// widgets.push(newWidget);
-	// setWidgetText(i);
-}
+		context.fillText(message, borderThickness, fontsize + borderThickness);
 
-function makeTextSprite(message, parameters) {
-	if (parameters === undefined) parameters = {};
+		// canvas contents will be used for a texture
+		var texture = new THREE.Texture(canvas)
+		texture.needsUpdate = true;
 
-	var fontface = parameters.hasOwnProperty("fontface") ?
-		parameters["fontface"] : "Arial";
+		var spriteMaterial = new THREE.SpriteMaterial({
+			map: texture,
+			useScreenCoordinates: false,
+			alignment: spriteAlignment
+		});
+		var sprite = new THREE.Sprite(spriteMaterial);
+		sprite.scale.set(100, 50, 1.0);
+		return sprite;
+	}
 
-	var fontsize = parameters.hasOwnProperty("fontsize") ?
-		parameters["fontsize"] : 18;
+	// function for drawing rounded rectangles
 
-	var borderThickness = parameters.hasOwnProperty("borderThickness") ?
-		parameters["borderThickness"] : 4;
+	function roundRect(ctx, x, y, w, h, r) {
+		ctx.beginPath();
+		ctx.moveTo(x + r, y);
+		ctx.lineTo(x + w - r, y);
+		ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+		ctx.lineTo(x + w, y + h - r);
+		ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+		ctx.lineTo(x + r, y + h);
+		ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+		ctx.lineTo(x, y + r);
+		ctx.quadraticCurveTo(x, y, x + r, y);
+		ctx.closePath();
+		ctx.fill();
+		ctx.stroke();
+	}
 
-	var borderColor = parameters.hasOwnProperty("borderColor") ?
-		parameters["borderColor"] : {
-		r: 0,
-		g: 0,
-		b: 0,
-		a: 1.0
-	};
+	function animate() {
+		requestAnimationFrame(animate);
+		render();
+		update();
+	}
 
-	var backgroundColor = parameters.hasOwnProperty("backgroundColor") ?
-		parameters["backgroundColor"] : {
-		r: 255,
-		g: 255,
-		b: 255,
-		a: 1.0
-	};
+	function update() {
+		// find intersections
 
-	var spriteAlignment = THREE.SpriteAlignment.topLeft;
+		// create a Ray with origin at the mouse position
+		//   and direction into the scene (camera direction)
+		var vector = new THREE.Vector3(mouse.x, mouse.y, 1);
+		proj.unprojectVector(vector, camera);
+		var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
 
-	var canvas = document.createElement('canvas');
-	var context = canvas.getContext('2d');
-	context.font = "Bold " + fontsize + "px " + fontface;
+		// create an array containing all objects in the scene with which the ray intersects
+		var intersects = ray.intersectObjects(pois);
 
-	// get size data (height depends only on font size)
-	var metrics = context.measureText(message);
-	var textWidth = metrics.width;
+		// INTERSECTED = the object in the scene currently closest to the camera 
+		//		and intersected by the Ray projected from the mouse position 	
 
-	// background color
-	context.fillStyle = "rgba(" + backgroundColor.r + "," + backgroundColor.g + "," + backgroundColor.b + "," + backgroundColor.a + ")";
-	// border color
-	context.strokeStyle = "rgba(" + borderColor.r + "," + borderColor.g + "," + borderColor.b + "," + borderColor.a + ")";
-
-	context.lineWidth = borderThickness;
-	roundRect(context, borderThickness / 2, borderThickness / 2, textWidth + borderThickness, fontsize * 1.4 + borderThickness, 6);
-	// 1.4 is extra height factor for text below baseline: g,j,p,q.
-
-	// text color
-	context.fillStyle = "rgba(0, 0, 0, 1.0)";
-
-	context.fillText(message, borderThickness, fontsize + borderThickness);
-
-	// canvas contents will be used for a texture
-	var texture = new THREE.Texture(canvas)
-	texture.needsUpdate = true;
-
-	var spriteMaterial = new THREE.SpriteMaterial({
-		map: texture,
-		useScreenCoordinates: false,
-		alignment: spriteAlignment
-	});
-	var sprite = new THREE.Sprite(spriteMaterial);
-	sprite.scale.set(100, 50, 1.0);
-	return sprite;
-}
-
-// function for drawing rounded rectangles
-
-function roundRect(ctx, x, y, w, h, r) {
-	ctx.beginPath();
-	ctx.moveTo(x + r, y);
-	ctx.lineTo(x + w - r, y);
-	ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-	ctx.lineTo(x + w, y + h - r);
-	ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-	ctx.lineTo(x + r, y + h);
-	ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-	ctx.lineTo(x, y + r);
-	ctx.quadraticCurveTo(x, y, x + r, y);
-	ctx.closePath();
-	ctx.fill();
-	ctx.stroke();
-}
-
-function animate() {
-	requestAnimationFrame(animate);
-	render();
-	update();
-}
-
-function update() {
-	// find intersections
-
-	// create a Ray with origin at the mouse position
-	//   and direction into the scene (camera direction)
-	var vector = new THREE.Vector3(mouse.x, mouse.y, 1);
-	proj.unprojectVector(vector, camera);
-	var ray = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
-
-	// create an array containing all objects in the scene with which the ray intersects
-	var intersects = ray.intersectObjects(boxes);
-
-	// INTERSECTED = the object in the scene currently closest to the camera 
-	//		and intersected by the Ray projected from the mouse position 	
-
-	// if there is one (or more) intersections
-	if (intersects.length > 0) {
-		// if the closest object intersected is not the currently stored intersection object
-		if (intersects[0].object != INTERSECTED) {
+		// if there is one (or more) intersections
+		if (intersects.length > 0) {
+			// if the closest object intersected is not the currently stored intersection object
+			if (intersects[0].object != INTERSECTED) {
+				// restore previous intersection object (if it exists) to its original color
+				if (INTERSECTED)
+					INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
+				// store reference to closest object as current intersection object
+				INTERSECTED = intersects[0].object;
+				// store color of closest object (for later restoration)
+				INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+				// set a new color for closest object
+				INTERSECTED.material.color.setHex(0xffff00);
+			}
+		} else // there are no intersections
+		{
 			// restore previous intersection object (if it exists) to its original color
 			if (INTERSECTED)
 				INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
-			// store reference to closest object as current intersection object
-			INTERSECTED = intersects[0].object;
-			// store color of closest object (for later restoration)
-			INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
-			// set a new color for closest object
-			INTERSECTED.material.color.setHex(0xffff00);
+			// remove previous intersection object reference
+			//     by setting current intersection object to "nothing"
+			INTERSECTED = null;
 		}
-	} else // there are no intersections
-	{
-		// restore previous intersection object (if it exists) to its original color
-		if (INTERSECTED)
-			INTERSECTED.material.color.setHex(INTERSECTED.currentHex);
-		// remove previous intersection object reference
-		//     by setting current intersection object to "nothing"
-		INTERSECTED = null;
-	}
 
-	if (cameraOldPosition.x != camera.position.x || cameraOldPosition.y != camera.position.y || cameraOldPosition.z != camera.position.z) {
-		for (var i = 0; i < dialogs.length; i++) {
-			setDialogPosition(i);
+		if (cameraOldPosition.x != camera.position.x || cameraOldPosition.y != camera.position.y || cameraOldPosition.z != camera.position.z) {
+			for (var i = 0; i < dialogs.length; i++) {
+				setDialogPosition(i);
+			}
+			cameraOldPosition.set(camera.position.x, camera.position.y, camera.position.z);
 		}
-		cameraOldPosition.set(camera.position.x, camera.position.y, camera.position.z);
-	}
-	controls.update();
-	stats.update();
-}
-
-function render() {
-	renderer.render(scene, camera);
-}
-
-
-// POI FUNCTIONS
-
-function searchPOIs(lat, lng) {
-	var center, searchPoint;
-	var restQueryURL;
-
-	if (!lat || !lng) {
-		// center = map.getCenter();
-		lat = 65.059;
-		lng = 25.466;
+		controls.update();
+		stats.update();
 	}
 
-	searchRadius = 1000;
+	function render() {
+		renderer.render(scene, camera);
+	}
 
-	console.log("Doing search from " + BACKEND_ADDRESS_POI);
-	console.log("Map center: lat=" + lat + " lon=" + lng);
-	restQueryURL = BACKEND_ADDRESS_POI + "radial_search?" +
-		"lat=" + lat + "&lon=" + lng + "&query_id=" + queryID + "&radius=" +
-		searchRadius + "&component=fw_core";
-	console.log("restQueryURL: " + restQueryURL);
-	miwi_poi_xhr = new XMLHttpRequest();
 
-	miwi_poi_xhr.onreadystatechange = function() {
-		if (miwi_poi_xhr.readyState === 4) {
-			if (miwi_poi_xhr.status === 200) {
-				// console.log("succes: " + miwi_poi_xhr.responseText);
-				var json = JSON.parse(miwi_poi_xhr.responseText);
-				parsePoiData(json);
-				console.log(json);
-			} else if (miwi_poi_xhr.status === 404) {
-				console.log("failed: " + miwi_poi_xhr.responseText);
+	// POI FUNCTIONS
+
+	function searchPOIs(lat, lng) {
+		var center, searchPoint;
+		var restQueryURL;
+
+		if (!lat || !lng) {
+			// center = map.getCenter();
+			lat = 65.059;
+			lng = 25.466;
+		}
+
+		searchRadius = 1000;
+
+		console.log("Doing search from " + BACKEND_ADDRESS_POI);
+		console.log("Map center: lat=" + lat + " lon=" + lng);
+		restQueryURL = BACKEND_ADDRESS_POI + "radial_search?" +
+			"lat=" + lat + "&lon=" + lng + "&query_id=" + queryID + "&radius=" +
+			searchRadius + "&component=fw_core";
+		console.log("restQueryURL: " + restQueryURL);
+		miwi_poi_xhr = new XMLHttpRequest();
+
+		miwi_poi_xhr.onreadystatechange = function() {
+			if (miwi_poi_xhr.readyState === 4) {
+				if (miwi_poi_xhr.status === 200) {
+					// console.log("succes: " + miwi_poi_xhr.responseText);
+					var json = JSON.parse(miwi_poi_xhr.responseText);
+					parsePoiData(json);
+					console.log(json);
+				} else if (miwi_poi_xhr.status === 404) {
+					console.log("failed: " + miwi_poi_xhr.responseText);
+				}
 			}
 		}
-	}
 
-	miwi_poi_xhr.onerror = function(e) {
-		log("failed to get POIs");
-	};
+		miwi_poi_xhr.onerror = function(e) {
+			log("failed to get POIs");
+		};
 
-	miwi_poi_xhr.open("GET", restQueryURL, true);
-	miwi_poi_xhr.send();
-	// searchPoint = new google.maps.LatLng( lat, lng );
+		miwi_poi_xhr.open("GET", restQueryURL, true);
+		miwi_poi_xhr.send();
+		// searchPoint = new google.maps.LatLng( lat, lng );
 
-	/*  // Circle removed
+		/*  // Circle removed
         var circle = new google.maps.Circle( {
             strokeWeight: 1,
             fillColor: '#FF0000',
@@ -483,145 +494,145 @@ function searchPOIs(lat, lng) {
             map: map
         } );
 */
-	// if ( !oldSearchPoints.hasOwnProperty( searchRadius + '' ) ) {
-	//     oldSearchPoints[searchRadius + ''] = [];
-	// }
+		// if ( !oldSearchPoints.hasOwnProperty( searchRadius + '' ) ) {
+		//     oldSearchPoints[searchRadius + ''] = [];
+		// }
 
-	// queries[queryID + ''] = {id: queryID, center: searchPoint, 
-	//         radius: searchRadius, ready: false, debugShape: circle};
-	// oldSearchPoints[searchRadius + ''].push( queries[queryID + ''] );
+		// queries[queryID + ''] = {id: queryID, center: searchPoint, 
+		//         radius: searchRadius, ready: false, debugShape: circle};
+		// oldSearchPoints[searchRadius + ''].push( queries[queryID + ''] );
 
-	// queryID++;
+		// queryID++;
 
-	// console.log( oldSearchPoints )
+		// console.log( oldSearchPoints )
 
-}
-
-function parsePoiData(data) {
-	var counter = 0,
-		jsonData, poiData, pos, i, uuid, pois,
-		contents, locations, location, searchPoint, poiCore;
-
-	if (!data) {
-		return;
 	}
 
-	console.log("Parsing POI data...");
+	function parsePoiData(data) {
+		var counter = 0,
+			jsonData, poiData, pos, i, uuid, pois,
+			contents, locations, location, searchPoint, poiCore;
 
-	if (!data.hasOwnProperty("pois")) {
-		log("Error: Invalid POI data.");
-		return;
-	}
-
-	pois = data['pois'];
-
-	for (uuid in pois) {
-		poiData = pois[uuid];
-		poiCore = poiData.fw_core;
-		// console.log("poiCore=" + JSON.stringify(poiCore));
-		if (poiCore && poiCore.hasOwnProperty("location")) {
-			location = poiCore['location'];
-
-			if (location['type'] === 'wsg84') {
-				// pos = new google.maps.LatLng(location['latitude'],
-				// 	location['longitude']);
-				// miwi_poi_pois[uuid] = poiCore;
-				// addPOI_UUID_ToMap(pos, poiCore, uuid);
-				// counter++;
-
-				var lat, lon, name;
-				lat = (location['latitude'] * 100000) - 6505900;
-				lon = (location['longitude'] * 100000) - 2546600;
-
-				// console.log("lat: "+ lat);
-				// console.log("lon: "+ lon);
-
-				createBox(lat, lon, poiCore['name'], poiCore['description']);
-			}
+		if (!data) {
+			return;
 		}
 
-		//console.log( poiData );
+		console.log("Parsing POI data...");
 
-		// storePoi(uuid, poiCore);
-	}
-}
+		if (!data.hasOwnProperty("pois")) {
+			log("Error: Invalid POI data.");
+			return;
+		}
 
-// WIDGETS
-// 2D widgets to show tweets
+		pois = data['pois'];
 
-// function initWidgets() {
-// 	// for (var i = 0; i < personAmount; i++) {
-// 	newWidget = $("<div/>");
-// 	newWidget.attr("id", "twitter");
-// 	newWidget.css({
-// 		"background-color": "rgba(255,255,255,0.7)",
-// 		"color": "rgb(80,80,80)",
-// 		"border": "1px solid rgba(200,200,200,0.7)",
-// 		"font-size": 12,
-// 		"border-radius": 6,
-// 		"position": "absolute",
-// 		"top": 0,
-// 		"padding": 10,
-// 		"margin": 10,
-// 		"width": 250
-// 	});
+		for (uuid in pois) {
+			poiData = pois[uuid];
+			poiCore = poiData.fw_core;
+			// console.log("poiCore=" + JSON.stringify(poiCore));
+			if (poiCore && poiCore.hasOwnProperty("location")) {
+				location = poiCore['location'];
 
-// 	// meshmoon.ui.addWidgetToScene(newWidget);
-// 	widgets.push(newWidget);
+				if (location['type'] === 'wsg84') {
+					// pos = new google.maps.LatLng(location['latitude'],
+					// 	location['longitude']);
+					// miwi_poi_pois[uuid] = poiCore;
+					// addPOI_UUID_ToMap(pos, poiCore, uuid);
+					// counter++;
 
-// 	// setWidgetText(i);
-// 	// }
-// }
+					var lat, lon, name;
+					lat = (location['latitude'] * 100000) - 6505900;
+					lon = (location['longitude'] * 100000) - 2546600;
 
-// Calculate and set widget position
+					// console.log("lat: "+ lat);
+					// console.log("lon: "+ lon);
 
-function setDialogPosition(i) {
-	if(dialogs[i] === undefined){
-		return;
-	}
+					createBox(lat, lon, poiCore['name'], poiCore['description'], uuid);
+				}
+			}
 
-	var pLocal = new THREE.Vector3(0, 0, -1);
-	var pWorld = pLocal.applyMatrix4(camera.matrixWorld);
-	var forward = pWorld.sub(camera.position).normalize();
-	var toOther = pois[i].position.clone();
-	toOther.sub(camera.position);
-	// console.clear();
-	// console.log(toOther);
-	if (forward.dot(toOther) < 0) {
-		dialogs[i].remove();
-		dialogs[i] = undefined;
-		return;
+			//console.log( poiData );
+
+			// storePoi(uuid, poiCore);
+		}
 	}
 
+	// WIDGETS
+	// 2D widgets to show tweets
 
-	var x, y, p, v, percX, percY, left, top;
+	// function initWidgets() {
+	// 	// for (var i = 0; i < personAmount; i++) {
+	// 	newWidget = $("<div/>");
+	// 	newWidget.attr("id", "twitter");
+	// 	newWidget.css({
+	// 		"background-color": "rgba(255,255,255,0.7)",
+	// 		"color": "rgb(80,80,80)",
+	// 		"border": "1px solid rgba(200,200,200,0.7)",
+	// 		"font-size": 12,
+	// 		"border-radius": 6,
+	// 		"position": "absolute",
+	// 		"top": 0,
+	// 		"padding": 10,
+	// 		"margin": 10,
+	// 		"width": 250
+	// 	});
 
-	// this will give us position relative to the world
-	p = new THREE.Vector3(pois[i].position.x, pois[i].position.y + 1, pois[i].position.z);
+	// 	// meshmoon.ui.addWidgetToScene(newWidget);
+	// 	widgets.push(newWidget);
 
-	// projectVector will translate position to 2d
-	projector = new THREE.Projector();
-	v = projector.projectVector(p, camera);
+	// 	// setWidgetText(i);
+	// 	// }
+	// }
 
-	// translate our vector so that percX=0 represents
-	// the left edge, percX=1 is the right edge,
-	// percY=0 is the top edge, and percY=1 is the bottom edge.
-	percX = (v.x + 1) / 2;
-	percY = (-v.y + 1) / 2;
+	// Calculate and set widget position
 
-	// scale these values to our viewport size
-	x = percX * window.innerWidth;
-	y = percY * window.innerHeight;
+	function setDialogPosition(i) {
+		if (dialogs[i] === undefined) {
+			return;
+		}
 
-	// calculate distance between the camera and the person. Used for fading the tooltip
-	var distance = p.distanceTo(camera.position);
-	var distance = 2 / distance;
+		var pLocal = new THREE.Vector3(0, 0, -1);
+		var pWorld = pLocal.applyMatrix4(camera.matrixWorld);
+		var forward = pWorld.sub(camera.position).normalize();
+		var toOther = pois[i].position.clone();
+		toOther.sub(camera.position);
+		// console.clear();
+		// console.log(toOther);
+		if (forward.dot(toOther) < 0) {
+			dialogs[i].remove();
+			dialogs[i] = undefined;
+			return;
+		}
 
-	dialogs[i].dialog("option", "position", [x, y]);
 
-	// widgets[i].css({
-	// 	left: x,
-	// 	top: y,
-	// 	opacity: distance
-	// });
-}
+		var x, y, p, v, percX, percY, left, top;
+
+		// this will give us position relative to the world
+		p = new THREE.Vector3(pois[i].position.x, pois[i].position.y + 1, pois[i].position.z);
+
+		// projectVector will translate position to 2d
+		projector = new THREE.Projector();
+		v = projector.projectVector(p, camera);
+
+		// translate our vector so that percX=0 represents
+		// the left edge, percX=1 is the right edge,
+		// percY=0 is the top edge, and percY=1 is the bottom edge.
+		percX = (v.x + 1) / 2;
+		percY = (-v.y + 1) / 2;
+
+		// scale these values to our viewport size
+		x = percX * window.innerWidth;
+		y = percY * window.innerHeight;
+
+		// calculate distance between the camera and the person. Used for fading the tooltip
+		var distance = p.distanceTo(camera.position);
+		var distance = 2 / distance;
+
+		dialogs[i].dialog("option", "position", [x, y]);
+
+		// widgets[i].css({
+		// 	left: x,
+		// 	top: y,
+		// 	opacity: distance
+		// });
+	}
