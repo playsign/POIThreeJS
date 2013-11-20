@@ -33,6 +33,9 @@ var time = Date.now();
 
 // POI
 
+var latitude = 65.013004; // linnanmaa 65.059;
+var longitude = 25.472537; // linnanmaa 25.466;
+
 var queryID = 0; //Running number to identify POI search areas, and to track search success
 var miwi_poi_xhr = null; // http request
 
@@ -104,7 +107,9 @@ function init() {
 	floor.position.y = -0.5;
 	floor.rotation.x = Math.PI / 2;
 	floor.name = "Checkerboard Floor";
-	scene.add(floor);
+	// scene.add(floor);
+	// HELPERS
+	scene.add(new THREE.AxisHelper(1000))
 	// SKYBOX/FOG
 	var skyBoxGeometry = new THREE.CubeGeometry(10000, 10000, 10000);
 	var skyBoxMaterial = new THREE.MeshBasicMaterial({
@@ -114,10 +119,12 @@ function init() {
 	var skyBox = new THREE.Mesh(skyBoxGeometry, skyBoxMaterial);
 	scene.add(skyBox);
 	// MODEL
-	// var jsonLoader = new THREE.JSONLoader();
-	// jsonLoader.load("OuluThreeJS/Masterscene.js", function(geometry, material) {
-	// 	addModelToScene(geometry, material, "oulu", "./OuluThreeJS/images/");
-	// });
+	var jsonLoader = new THREE.JSONLoader();
+	jsonLoader.load("OuluThreeJS/Masterscene.js", function(geometry, material) {
+		addModelToScene(geometry, material, "oulu", "./OuluThreeJS/images/");
+		oulu.rotateY(3.1415);
+		oulu.scale.set(1,1,1);
+	});
 
 	////////////
 	// CUSTOM //
@@ -132,7 +139,7 @@ function init() {
 	// when the mouse moves, call the given function
 	document.addEventListener('mousedown', onDocumentMouseDown, false);
 
-	searchPOIs(0, 0);
+	searchPOIs(latitude, longitude);
 }
 
 function onDocumentMouseMove(event) {
@@ -199,7 +206,7 @@ function createBox(lat, lon, name, desc, uuid) {
 		color: 0x000088
 	});
 	cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-	cube.position.set(lat, 5, lon);
+	cube.position.set(lon, 5, lat);
 	cube.name = name;
 	cube.description = desc;
 	cube.uuid = uuid;
@@ -465,8 +472,6 @@ function searchPOIs(lat, lng) {
 
 	if (!lat || !lng) {
 		// center = map.getCenter();
-		lat = 65.059;
-		lng = 25.466;
 	}
 
 	searchRadius = 1000;
@@ -557,15 +562,18 @@ function parsePoiData(data) {
 				// counter++;
 
 				var lat, lon, name;
-				lat = (location['latitude'] * 100000) - 6505900;
-				lon = (location['longitude'] * 100000) - 2546600;
+				lat = (location['latitude'] * 111492.76) - (latitude * 111492.76);
+				lon = (location['longitude'] * 47152.58) - (longitude * 47152.58);
 
 				// console.log("lat: "+ lat);
 				// console.log("lon: "+ lon);
 
-				createBox(lat, lon, poiCore['name'], poiCore['description'], uuid);
+				createBox(lat, -lon, poiCore['name'], poiCore['description'], uuid);
+
 			}
 		}
+
+		createBox(0, 0, "center", "center", "dgdgf");
 
 		//console.log( poiData );
 
