@@ -13,8 +13,7 @@
 // standard global variables
 var container, scene, camera, renderer, controls, stats;
 var cameraOldQuaternionW = 0;
-var keyboard = new THREEx.KeyboardState();
-var clock = new THREE.Clock();
+// var keyboard = new THREEx.KeyboardState();
 
 var mouse = {
 	x: 0,
@@ -27,8 +26,7 @@ var projector, proj, mouse = {
 		x: 0,
 		y: 0
 	}, INTERSECTED;
-var sprite1;
-var canvas1, context1, texture1;
+
 var time = Date.now();
 
 // POI
@@ -50,7 +48,7 @@ var dialogs = [];
 init();
 animate();
 
-// FUNCTIONS 		
+// FUNCTIONS
 
 function init() {
 	// SCENE
@@ -109,7 +107,7 @@ function init() {
 	floor.name = "Checkerboard Floor";
 	// scene.add(floor);
 	// HELPERS
-	scene.add(new THREE.AxisHelper(1000))
+	scene.add(new THREE.AxisHelper(1000));
 	// SKYBOX/FOG
 	var skyBoxGeometry = new THREE.CubeGeometry(10000, 10000, 10000);
 	var skyBoxMaterial = new THREE.MeshBasicMaterial({
@@ -371,7 +369,7 @@ function makeTextSprite(message, parameters) {
 	context.fillText(message, borderThickness, fontsize + borderThickness);
 
 	// canvas contents will be used for a texture
-	var texture = new THREE.Texture(canvas)
+	var texture = new THREE.Texture(canvas);
 	texture.needsUpdate = true;
 
 	var spriteMaterial = new THREE.SpriteMaterial({
@@ -421,8 +419,7 @@ function update() {
 	var intersects = ray.intersectObjects(pois);
 
 	// INTERSECTED = the object in the scene currently closest to the camera 
-	//		and intersected by the Ray projected from the mouse position 	
-
+	// and intersected by the Ray projected from the mouse position
 	// if there is one (or more) intersections
 	if (intersects.length > 0) {
 		// if the closest object intersected is not the currently stored intersection object
@@ -467,7 +464,8 @@ function render() {
 // POI FUNCTIONS
 
 function searchPOIs(lat, lng) {
-	var center, searchPoint;
+	// var center;
+	// var searchPoint;
 	var restQueryURL;
 
 	if (!lat || !lng) {
@@ -495,10 +493,10 @@ function searchPOIs(lat, lng) {
 				console.log("failed: " + miwi_poi_xhr.responseText);
 			}
 		}
-	}
+	};
 
 	miwi_poi_xhr.onerror = function(e) {
-		log("failed to get POIs");
+		console.log("failed to get POIs");
 	};
 
 	miwi_poi_xhr.open("GET", restQueryURL, true);
@@ -530,9 +528,7 @@ function searchPOIs(lat, lng) {
 }
 
 function parsePoiData(data) {
-	var counter = 0,
-		jsonData, poiData, pos, i, uuid, pois,
-		contents, locations, location, searchPoint, poiCore;
+	var poiData, uuid, pois, location, poiCore;
 
 	if (!data) {
 		return;
@@ -541,7 +537,7 @@ function parsePoiData(data) {
 	console.log("Parsing POI data...");
 
 	if (!data.hasOwnProperty("pois")) {
-		log("Error: Invalid POI data.");
+		console.log("Error: Invalid POI data.");
 		return;
 	}
 
@@ -629,7 +625,7 @@ function setDialogPosition(i) {
 	}
 
 
-	var x, y, p, v, percX, percY, left, top;
+	var x, y, p, v, percX, percY;
 
 	// this will give us position relative to the world
 	p = new THREE.Vector3(pois[i].position.x, pois[i].position.y + 1, pois[i].position.z);
@@ -650,7 +646,7 @@ function setDialogPosition(i) {
 
 	// calculate distance between the camera and the person. Used for fading the tooltip
 	var distance = p.distanceTo(controls.getObject().position);
-	var distance = 2 / distance;
+	distance = 2 / distance;
 
 	dialogs[i].dialog("option", "position", [x, y]);
 
