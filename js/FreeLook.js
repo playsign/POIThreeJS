@@ -185,7 +185,7 @@ THREE.FreeLookControls = function(camera, domElement) {
 
 		if (scope.enabled === false) return;
 
-		delta *= 0.00001;
+		delta *= 0.1;
 
 		velocity.x += (-velocity.x) * 0.08 * delta;
 		velocity.y += (-velocity.y) * 0.08 * delta;

@@ -113,6 +113,11 @@ function init() {
 	});
 	var skyBox = new THREE.Mesh(skyBoxGeometry, skyBoxMaterial);
 	scene.add(skyBox);
+	// MODEL
+	// var jsonLoader = new THREE.JSONLoader();
+	// jsonLoader.load("OuluThreeJS/Masterscene.js", function(geometry, material) {
+	// 	addModelToScene(geometry, material, "oulu", "./OuluThreeJS/images/");
+	// });
 
 	////////////
 	// CUSTOM //
@@ -441,8 +446,9 @@ function update() {
 		}
 
 		cameraOldQuaternionW = controls.getObject().quaternion._w;
-	} 
+	}
 	controls.update(Date.now() - time);
+	time = Date.now();
 	stats.update();
 }
 
