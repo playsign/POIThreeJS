@@ -3,6 +3,7 @@
 /*
  * 	POIThreeJS
  * 	@author Tapani Jamsa
+ *	@author Toni Alatalo
  * 	Date: 2013
  */
 
@@ -30,17 +31,16 @@ var projector, proj, mouse = {
 var time = Date.now();
 
 // POI
-
 var latitude = 65.013004; // linnanmaa 65.059;
 var longitude = 25.472537; // linnanmaa 25.466;
 
 var queryID = 0; //Running number to identify POI search areas, and to track search success
 var miwi_poi_xhr = null; // http request
 
-//        BACKEND_ADDRESS_POI = "http://130.231.12.82:8080/"
+// BACKEND_ADDRESS_POI = "http://130.231.12.82:8080/"
 var BACKEND_ADDRESS_POI = "http://chiru.cie.fi:8080/";
 
-var searchRadius = 600;
+var searchRadius = 1000;
 
 var pois = [];
 var dialogs = [];
@@ -62,7 +62,7 @@ function init() {
 		FAR = 20000;
 	camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
 	scene.add(camera);
-	// camera.lookAt(scene.position);
+
 	// RENDERER
 	if (Detector.webgl)
 		renderer = new THREE.WebGLRenderer({
@@ -92,20 +92,6 @@ function init() {
 	var light = new THREE.PointLight(0xffffff);
 	light.position.set(0, 250, 0);
 	scene.add(light);
-	// FLOOR
-	var floorTexture = new THREE.ImageUtils.loadTexture('images/checkerboard.jpg');
-	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping;
-	floorTexture.repeat.set(100, 100);
-	var floorMaterial = new THREE.MeshBasicMaterial({
-		map: floorTexture,
-		side: THREE.DoubleSide
-	});
-	var floorGeometry = new THREE.PlaneGeometry(10000, 10000, 10, 10);
-	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
-	floor.position.y = -0.5;
-	floor.rotation.x = Math.PI / 2;
-	floor.name = "Checkerboard Floor";
-	// scene.add(floor);
 	// HELPERS
 	scene.add(new THREE.AxisHelper(1000));
 	// SKYBOX/FOG
@@ -152,7 +138,6 @@ function onDocumentMouseMove(event) {
 
 
 function onDocumentMouseDown(event) {
-	console.log("mouse down");
 	// the following line would stop any other event handler from firing
 	// (such as the mouse's TrackballControls)
 	// event.preventDefault();
@@ -165,7 +150,7 @@ function onDocumentMouseDown(event) {
 	// find intersections
 
 	// create a Ray with origin at the mouse position
-	//   and direction into the scene (camera direction)
+	// and direction into the scene (camera direction)
 	var vector = new THREE.Vector3(mouse.x, mouse.y, 1);
 	proj.unprojectVector(vector, camera);
 	var pLocal = new THREE.Vector3(0, 0, -1);
@@ -228,92 +213,10 @@ function createBox(lat, lon, name, desc, uuid) {
 	});
 	nameSprite.position.set(0, 30, 0);
 	cube.add(nameSprite);
-	// cube.nameSprite = nameSprite;
 
-	// Description sprite
-	var descSprite = makeTextSprite(desc, {
-		fontsize: 8,
-		borderColor: {
-			r: 0,
-			g: 0,
-			b: 255,
-			a: 1.0
-		},
-		backgroundColor: {
-			r: 100,
-			g: 100,
-			b: 255,
-			a: 0.8
-		}
-	});
-	descSprite.position.set(0, 60, 0);
-	descSprite.visible = false;
-	cube.add(descSprite);
 	cube.index = pois.length;
 	pois.push(cube);
 	dialogs.push(undefined);
-
-	// // jQuery dialog
-	// var newDialog = name;
-	// $("body").append("<div id=" + newDialog + " title=" + newDialog + ">" + desc + "</div>");
-	// dialogs.push($("#" + newDialog).dialog({
-	// 	// position: {
-	// 	// 	my: "left top",
-	// 	// 	at: "left bottom",
-	// 	// 	of: window
-	// 	// },
-	// 	width: 300,
-	// 	height: "auto",
-	// 	// maxWidth: 100,
-	// 	//       minWidth: 10
-	// }));
-
-
-	// $("#"+newWidget)
-	// 	.css({
-	// 	"background": "rgba(255,255,255,0.5)"
-	// })
-	// 	.dialog({
-	// 	autoOpen: false,
-	// 	show: {
-	// 		effect: 'fade',
-	// 		duration: 500
-	// 	},
-	// 	hide: {
-	// 		effect: 'fade',
-	// 		duration: 500
-	// 	}
-	// });
-
-	// widgets.push($(newWidget));
-
-	// var newWidget = jQuery('<div/>', {
-	// 	id: 'foo',
-	// 	href: 'http://google.com',
-	// 	title: name,
-	// 	rel: 'external',
-	// 	text: 'Go to Google!'
-	// }).appendTo('#infoButton').dialog().text(name);
-
-	// widgets.push(jQuery("#infoButton").dialog().text(name));
-
-	// var newWidget = $("<div/>");
-	// newWidget.attr("id", "twitter");
-	// newWidget.css({
-	// 	"background-color": "rgba(255,255,255,0.7)",
-	// 	"color": "rgb(80,80,80)",
-	// 	"border": "1px solid rgba(200,200,200,0.7)",
-	// 	"font-size": 12,
-	// 	"border-radius": 6,
-	// 	"position": "absolute",
-	// 	"top": 0,
-	// 	"padding": 10,
-	// 	"margin": 10,
-	// 	"width": 250
-	// });
-	// meshmoon.ui.addWidgetToScene(newWidget);
-	// widgets.push(newWidget);
-	// setWidgetText(i);
 }
 
 function makeTextSprite(message, parameters) {
@@ -460,19 +363,9 @@ function render() {
 	renderer.render(scene, camera);
 }
 
-
 // POI FUNCTIONS
-
 function searchPOIs(lat, lng) {
-	// var center;
-	// var searchPoint;
 	var restQueryURL;
-
-	if (!lat || !lng) {
-		// center = map.getCenter();
-	}
-
-	searchRadius = 1000;
 
 	console.log("Doing search from " + BACKEND_ADDRESS_POI);
 	console.log("Map center: lat=" + lat + " lon=" + lng);
@@ -501,30 +394,6 @@ function searchPOIs(lat, lng) {
 
 	miwi_poi_xhr.open("GET", restQueryURL, true);
 	miwi_poi_xhr.send();
-	// searchPoint = new google.maps.LatLng( lat, lng );
-
-	/*  // Circle removed
-        var circle = new google.maps.Circle( {
-            strokeWeight: 1,
-            fillColor: '#FF0000',
-            fillOpacity: 0.10,
-            radius: searchRadius,
-            center: searchPoint,
-            map: map
-        } );
-*/
-	// if ( !oldSearchPoints.hasOwnProperty( searchRadius + '' ) ) {
-	//     oldSearchPoints[searchRadius + ''] = [];
-	// }
-
-	// queries[queryID + ''] = {id: queryID, center: searchPoint, 
-	//         radius: searchRadius, ready: false, debugShape: circle};
-	// oldSearchPoints[searchRadius + ''].push( queries[queryID + ''] );
-
-	// queryID++;
-
-	// console.log( oldSearchPoints )
-
 }
 
 function parsePoiData(data) {
@@ -565,47 +434,18 @@ function parsePoiData(data) {
 				// console.log("lon: "+ lon);
 
 				createBox(lat, -lon, poiCore['name'], poiCore['description'], uuid);
-
 			}
 		}
 
-		createBox(0, 0, "center", "center", "dgdgf");
+		// createBox(0, 0, "center", "center", "dgdgf");
 
-		//console.log( poiData );
+		// console.log( poiData );
 
 		// storePoi(uuid, poiCore);
 	}
 }
 
-// WIDGETS
-// 2D widgets to show tweets
-
-// function initWidgets() {
-// 	// for (var i = 0; i < personAmount; i++) {
-// 	newWidget = $("<div/>");
-// 	newWidget.attr("id", "twitter");
-// 	newWidget.css({
-// 		"background-color": "rgba(255,255,255,0.7)",
-// 		"color": "rgb(80,80,80)",
-// 		"border": "1px solid rgba(200,200,200,0.7)",
-// 		"font-size": 12,
-// 		"border-radius": 6,
-// 		"position": "absolute",
-// 		"top": 0,
-// 		"padding": 10,
-// 		"margin": 10,
-// 		"width": 250
-// 	});
-
-// 	// meshmoon.ui.addWidgetToScene(newWidget);
-// 	widgets.push(newWidget);
-
-// 	// setWidgetText(i);
-// 	// }
-// }
-
-// Calculate and set widget position
-
+// Calculate and set dialog position
 function setDialogPosition(i) {
 	if (dialogs[i] === undefined) {
 		return;
@@ -616,14 +456,12 @@ function setDialogPosition(i) {
 	var forward = pWorld.sub(controls.getObject().position).normalize();
 	var toOther = pois[i].position.clone();
 	toOther.sub(controls.getObject().position);
-	// console.clear();
-	// console.log(toOther);
+
 	if (forward.dot(toOther) < 0) {
 		dialogs[i].remove();
 		dialogs[i] = undefined;
 		return;
 	}
-
 
 	var x, y, p, v, percX, percY;
 
@@ -649,10 +487,4 @@ function setDialogPosition(i) {
 	distance = 2 / distance;
 
 	dialogs[i].dialog("option", "position", [x, y]);
-
-	// widgets[i].css({
-	// 	left: x,
-	// 	top: y,
-	// 	opacity: distance
-	// });
 }
