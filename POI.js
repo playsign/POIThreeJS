@@ -174,6 +174,8 @@ function onDocumentMouseDown(event) {
 				width: 300,
 				height: "auto",
 			});
+
+			setDialogPosition(selectedObject.index);
 		} else {
 			dialogs[selectedObject.index].remove();
 			dialogs[selectedObject.index] = undefined;
@@ -184,12 +186,12 @@ function onDocumentMouseDown(event) {
 }
 
 function createBox(lat, lon, name, desc, uuid) {
-	var cubeGeometry = new THREE.CubeGeometry(10, 10, 10);
+	var cubeGeometry = new THREE.CubeGeometry(3, 50, 3);
 	var cubeMaterial = new THREE.MeshBasicMaterial({
-		color: 0x000088
+		color: 0x0FF6464
 	});
 	cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-	cube.position.set(lon, 5, lat);
+	cube.position.set(lon, 25, lat);
 	cube.name = name;
 	cube.description = desc;
 	cube.uuid = uuid;
@@ -197,7 +199,7 @@ function createBox(lat, lon, name, desc, uuid) {
 
 	// Name sprite
 	var nameSprite = makeTextSprite(name, {
-		fontsize: 24,
+		fontsize: 12,
 		borderColor: {
 			r: 255,
 			g: 0,
@@ -211,7 +213,7 @@ function createBox(lat, lon, name, desc, uuid) {
 			a: 0.8
 		}
 	});
-	nameSprite.position.set(0, 30, 0);
+	nameSprite.position.set(0, 35, 0);
 	cube.add(nameSprite);
 
 	cube.index = pois.length;
@@ -466,7 +468,7 @@ function setDialogPosition(i) {
 	var x, y, p, v, percX, percY;
 
 	// this will give us position relative to the world
-	p = new THREE.Vector3(pois[i].position.x, pois[i].position.y + 1, pois[i].position.z);
+	p = new THREE.Vector3(pois[i].position.x, pois[i].position.y + (pois[i].geometry.height / 2), pois[i].position.z);
 
 	// projectVector will translate position to 2d
 	projector = new THREE.Projector();
